@@ -26,7 +26,7 @@ user-transactions.json
   [feature_engineering.py] → Wallet-level features
         │
         ▼
-  [train_model.py] → Trains a classifier model
+  [train_model.py] → Trains a Regression model
         │
         ▼
   [scoring.py] → Applies model, generates scores (0–1000)

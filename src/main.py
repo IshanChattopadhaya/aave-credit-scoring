@@ -1,14 +1,14 @@
 # src/main.py
 
 import os
-from src.parser import parse_transactions
-from src.feature_engineering import build_wallet_features
-from src.scoring import score_wallets
+from parser import parse_transactions
+from feature_engineering import compute_wallet_features
+from scoring import score_wallets
 
 def run_pipeline(
     raw_json_path="data/user-transactions.json",
     intermediate_csv_path="data/wallet_features.csv",
-    model_path="data/credit_model.pkl",
+    model_path="data/credit_model_xgb.pkl",
     output_csv_path="data/wallet_scores.csv"
 ):
     print(" Starting credit scoring pipeline...")
@@ -23,7 +23,8 @@ def run_pipeline(
 
     # Step 2: Feature Engineering
     print(" Building wallet-level features...")
-    build_wallet_features(tx_data, output_csv_path=intermediate_csv_path)
+    df_wallets = compute_wallet_features(tx_data)
+    df_wallets.to_csv(intermediate_csv_path, index=False)
 
     # Step 3: ML Scoring
     print(" Generating credit scores...")

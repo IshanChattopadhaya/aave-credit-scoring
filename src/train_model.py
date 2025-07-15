@@ -1,70 +1,79 @@
 # src/train_model.py
-
 import pandas as pd
-import joblib
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
+import joblib
+import xgboost as xgb
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
+from sklearn.metrics import mean_squared_error, r2_score
 
+# Load wallet features
+df = pd.read_csv("data/wallet_features.csv")
 
-def generate_labels(df):
-    """
-    Create proxy labels:
-    - Label = 1 if repay_borrow_ratio > 0.5 and no liquidation
-    - Label = 0 otherwise
-    """
-    df['label'] = ((df['repay_borrow_ratio'] > 0.5) & (df['total_liquidation'] == 0)).astype(int)
-    print("Label distribution:\n", df['label'].value_counts())
-    return df
+# Compute continuous target: repay-to-borrow ratio as proxy for creditworthiness
+df['repay_ratio'] = df['total_repay'] / (df['total_borrow'] + 1e-6)
+df['repay_ratio'] = df['repay_ratio'].clip(0, 1)
 
+# Full feature set
+features = [
+    'total_deposit',
+    'total_borrow',
+    'total_repay',
+    'total_redeem',
+    'total_liquidation',
+    'tx_count',
+    'unique_actions',
+    'repay_borrow_ratio',
+    'redeem_deposit_ratio',
+    'active_days',
+    'activity_span_seconds'
+]
 
-def log_transform(df, cols):
-    for col in cols:
-        df[col] = np.log1p(df[col])  # log(1 + x), safe for zeroes
-    return df
+# Fill NaNs with 0 (in case of division or missing fields)
+df[features] = df[features].fillna(0)
 
+# Apply log1p transform to reduce skew (except ratios and counts)
+log_features = [
+    'total_deposit',
+    'total_borrow',
+    'total_repay',
+    'total_redeem',
+    'total_liquidation',
+    'tx_count',
+    'activity_span_seconds',
+    'active_days'
+]
+df[log_features] = np.log1p(df[log_features])
 
-def train_credit_model(
-    csv_path="data/wallet_features.csv",
-    save_path="data/credit_model.pkl"
-):
-    # Load feature data
-    df = pd.read_csv(csv_path)
+# Final dataset
+X = df[features]
+y = df['repay_ratio']
 
-    # Step 1: Create proxy labels
-    df = generate_labels(df)
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-    # Step 2: Feature selection
-    feature_cols = [
-        'total_deposit', 'total_borrow', 'total_repay',
-        'repay_borrow_ratio', 'total_liquidation', 'tx_count'
-    ]
+# Train XGBoost Regressor
+model = xgb.XGBRegressor(
+    n_estimators=200,
+    learning_rate=0.05,
+    max_depth=5,
+    objective='reg:squarederror',
+    random_state=42
+)
+model.fit(X_train, y_train)
 
-    # Step 3: Log-transform high-range features
-    log_cols = ['total_deposit', 'total_borrow', 'total_repay', 'tx_count']
-    df = log_transform(df, log_cols)
+# Evaluate
+y_pred = model.predict(X_test)
+print("\n XGBoost Regressor Evaluation:")
+print(f"R² Score: {r2_score(y_test, y_pred):.4f}")
+print(f"RMSE: {np.sqrt(mean_squared_error(y_test, y_pred)):.4f}")
 
-    # Step 4: Prepare X and y
-    X = df[feature_cols]
-    y = df['label']
+# Save model
+joblib.dump(model, "data/credit_model_xgb.pkl")
 
-    # Step 5: Split and train
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Save the feature names used
+with open("data/feature_names.txt", "w") as f:
+    f.write("\n".join(features))
 
-    model = RandomForestClassifier(n_estimators=100, random_state=42)
-    model.fit(X_train, y_train)
+print("\n Model trained and saved successfully.")
 
-    # Step 6: Evaluate
-    y_pred = model.predict(X_test)
-    print("\n📊 Classification Report:\n")
-    print(classification_report(y_test, y_pred))
-
-    # Step 7: Save model
-    joblib.dump(model, save_path)
-    print(f"\n✅ Model saved to: {save_path}")
-
-
-if __name__ == "__main__":
-    train_credit_model()
 

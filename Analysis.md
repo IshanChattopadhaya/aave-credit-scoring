@@ -1,74 +1,72 @@
-# Credit Score Analysis on Aave V2 Wallets
+# Credit Score Analysis
 
-## Overview
-
-We trained a machine learning model to assign credit scores (0–1000) to user wallets based on their historical transaction behavior on the Aave V2 protocol.
-
-This analysis includes:
-
-- Distribution of credit scores  
-- Behavioral traits by score segment  
-- Key feature-level insights  
+This document presents an analysis of wallet behavior based on credit scores assigned using an **XGBoost-based model** trained on engineered features from Aave V2 protocol transaction history.
 
 ---
 
 ## Credit Score Distribution
 
-![Credit Score Distribution Graph](image-1.png)
+![Credit Score Distribution](image.png)
 
-**Observations:**
+As shown above:
 
-- Most wallets cluster in the **Low score (0–300)** range.
-- A significant spike occurs in the **High score (900–1000)** range.
-- Very few wallets fall into the **Medium range (301–700)** — indicating bimodal behavior patterns.
-
----
-
-## Score Segment Behavior
-
-| **Score Segment** | **Total Deposit** | **Total Borrow** | **Total Repay** | **Liquidation** | **Repay/Borrow Ratio** | **Tx Count** |
-|-------------------|-------------------|------------------|------------------|------------------|--------------------------|--------------|
-| **Low (0–300)**   | 7.94e+16          | 4.58e+16         | 1.70e+16         | 0.0              | 0.20                     | 80.15        |
-| **Medium (301–700)** | 2.91e+15       | 4.69e+14         | 2.33e+14         | 0.0              | 0.50                     | 159.00       |
-| **High (701–1000)** | 3.70e+16        | 7.99e+15         | 8.83e+15         | 0.0              | 1.81e+09                 | 56.52        |
+- **Majority of wallets** fall into the **Low** credit score segment (0–300).
+- A smaller cluster appears in the **High** score range (900–1000), with few wallets in the **Medium** segment (300–700).
+- The distribution reflects a skewed ecosystem where many users perform limited or risk-prone activity, while a few exhibit highly responsible usage.
 
 ---
 
-## Insights by Segment
+## Behavioral Analysis by Score Segment
 
-### Low Score (0–300)
-- Highest transaction count, but poor repayment behavior.
-- High borrow volume with low repayments → possibly spam or low-quality wallets.
-- Repay-to-borrow ratio of just **0.20**.
-
-### Medium Score (301–700)
-- Lower capital flow but moderately consistent behavior.
-- Repay-to-borrow ratio of **0.50** suggests basic financial responsibility.
-- Highest transaction count (159), possibly from testing or exploratory use.
-
-### High Score (701–1000)
-- Strong capital engagement with **excellent repayment** patterns.
-- Repay-to-borrow ratio exceeds **1 billion**, indicating over-repayment or very low borrowing.
-- Likely power users or institutions operating with high reliability.
-
----
-
-## Key Takeaways
-
-- **Score distribution is polarized**, indicating wallets behave either very reliably or quite riskily.
-- **Repay/Borrow ratio** was the strongest signal of reliability.
-- **Transaction count** varied significantly across segments, not always indicating quality.
-- All segments had **zero liquidations**, suggesting this dataset reflects mostly non-liquidated behavior.
+| Metric                    | Low Segment         | Medium Segment        | High Segment           |
+|---------------------------|---------------------|------------------------|-------------------------|
+| **total_deposit**         | 3.00e+16             | 5.86e+16               | 3.85e+16                |
+| **total_borrow**          | 4.27e+14             | 4.17e+16               | 8.55e+15                |
+| **total_repay**           | 7.18e+13             | 1.78e+16               | 9.49e+15                |
+| **total_redeem**          | 1.57e+16             | 8.13e+16               | 3.10e+16                |
+| **total_liquidation**     | 0.00                 | 0.00                   | 0.00                    |
+| **repay_borrow_ratio**    | 0.14                 | 0.51                   | 1.95e+09                |
+| **redeem_deposit_ratio**  | 6.98                 | 5.59e+08               | 1.55e+10                |
+| **tx_count**              | 62.87                | 114.49                 | 52.19                   |
+| **unique_actions**        | 3.93                 | 4.06                   | 3.93                    |
+| **active_days**           | 15.07                | 24.34                  | 12.47                   |
+| **activity_span_seconds** | 4.57e+6              | 5.67e+6                | 3.41e+6                 |
 
 ---
 
-## Conclusion
+## Segment Insights
 
-This ML-driven credit scoring system provides valuable insights into user behavior within the Aave protocol. It can serve as a foundation for:
+### Low Score Wallets
+- Minimal borrow and repay activity.
+- Redeem amounts dominate deposit values (possible early withdrawals or flash use).
+- Low repay-to-borrow ratio — potential risk or poor financial discipline.
+- Activity spans multiple days but lacks transaction depth.
 
-- Risk scoring in lending systems  
-- DeFi user segmentation  
-- Behavioral anomaly detection
+### Medium Score Wallets
+- Balanced deposit/borrow/repay behavior.
+- High transaction count and diverse actions suggest well-rounded participation.
+- Redeem and repay ratios are reasonable, indicating healthy financial cycles.
 
-Further improvements may include richer features (e.g., time-series gaps, asset diversity) and model upgrades (e.g., LightGBM, XGBoost).
+### High Score Wallets
+- Extremely high `repay_borrow_ratio` and `redeem_deposit_ratio` suggest full repayment or negligible borrowing.
+- Smaller overall activity span and fewer days active — possibly high-volume or optimal usage patterns.
+- High credit scores assigned likely due to perfect repayment behavior and non-liquidated history.
+
+---
+
+## Summary
+
+The credit scoring system effectively distinguishes responsible DeFi participants from risky or low-engagement wallets. The score segments offer behavioral insights:
+
+- **Low (0–300):** Unreliable or passive users  
+- **Medium (301–700):** Healthy but not elite usage  
+- **High (701–1000):** Responsible, reliable, and optimal behavior
+
+---
+
+Further improvements may include:
+- Clustering-based segmentation
+- Time-series transaction modeling
+- Risk-weighted asset valuation
+
 

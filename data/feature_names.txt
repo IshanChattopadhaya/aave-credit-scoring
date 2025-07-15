@@ -1,0 +1,11 @@
+total_deposit
+total_borrow
+total_repay
+total_redeem
+total_liquidation
+tx_count
+unique_actions
+repay_borrow_ratio
+redeem_deposit_ratio
+active_days
+activity_span_seconds
