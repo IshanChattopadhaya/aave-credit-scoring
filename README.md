@@ -55,9 +55,6 @@ From the raw JSON, we engineer meaningful features at the wallet level:
 - **Preprocessing**: Log transformation (`log1p`) on skewed features  
 - **Evaluation**: RMSE, R² on test split
 
-## Directory Structure
-
-<pre lang="markdown"> ``` 📦 aave-credit-scoring ├── data/ │ ├── user-transactions.json # Raw input JSON file │ ├── wallet_features.csv # Engineered features per wallet │ └── wallet_scores.csv # Final output scores │ ├── src/ │ ├── parser.py # Parses raw transactions into clean format │ ├── feature_engineering.py # Aggregates wallet-level features │ ├── train_model.py # Trains ML model (XGBoost) │ ├── scoring.py # Applies model to new wallets │ └── main.py # End-to-end pipeline │ ├── analysis.md # Summary and segment-wise behavior └── README.md # Project overview and setup ``` </pre>
 
 
 
