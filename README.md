@@ -36,27 +36,15 @@ From the raw JSON, we engineer meaningful features at the wallet level:
 
 ---
 
-## 🏗️ Project Architecture
+## Project Architecture
 
-user-transactions.json
-│
-▼
-[parser.py] → Normalized transactions
-│
-▼
-[feature_engineering.py] → Wallet-level features
-│
-▼
-[train_model.py] → Trains a Regression model
-│
-▼
-[scoring.py] → Applies model, generates scores (0–1000)
-│
-▼
-wallet_scores.csv → Final output
-│
-▼
-analysis.md → Score segment analysis
+1.  **Input:** `user-transactions.json`  
+2.  **Step 1:** `parser.py` – Clean and normalize transactions  
+3.  **Step 2:** `feature_engineering.py` – Compute wallet-level features  
+4.  **Step 3:** `train_model.py` – Train XGBoost regression model  
+5.  **Step 4:** `scoring.py` – Predict and assign credit scores (0–1000)  
+6.  **Output:** `wallet_scores.csv`
+
 
 
 ## Model Details
@@ -69,19 +57,7 @@ analysis.md → Score segment analysis
 
 ## Directory Structure
 
-aave-credit-scoring/
-├── data/
-│   ├── user-transactions.json
-│   ├── wallet_features.csv
-│   └── wallet_scores.csv
-├── src/
-│   ├── parser.py
-│   ├── feature_engineering.py
-│   ├── train_model.py
-│   ├── scoring.py
-│   └── main.py
-├── analysis.md
-└── README.md
+<pre lang="markdown"> ``` 📦 aave-credit-scoring ├── data/ │ ├── user-transactions.json # Raw input JSON file │ ├── wallet_features.csv # Engineered features per wallet │ └── wallet_scores.csv # Final output scores │ ├── src/ │ ├── parser.py # Parses raw transactions into clean format │ ├── feature_engineering.py # Aggregates wallet-level features │ ├── train_model.py # Trains ML model (XGBoost) │ ├── scoring.py # Applies model to new wallets │ └── main.py # End-to-end pipeline │ ├── analysis.md # Summary and segment-wise behavior └── README.md # Project overview and setup ``` </pre>
 
 
 
